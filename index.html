@@ -3,54 +3,51 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>City Builder 3D — Cooperative WebMultiplayer Retro Arcade Game</title>
-  <meta name="description" content="Cooperative 3D Multiplayer City Builder (1-4 Players) built with Three.js WebGL and PeerJS. Features retro arcade visuals, street-level 1st/3rd person walker exploration, and CC0 Kenney 3D assets.">
+  <title>Pocket Metropolis — 2.5D Cooperative Multiplayer City Builder</title>
+  <meta name="description" content="Cooperative 2.5D Multiplayer City Builder (1-4 Players) built with Three.js and WebRTC. Build thriving cities with friends offline or online.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="src/style.css">
 </head>
 <body>
-  <canvas id="c" aria-label="3D City Canvas"></canvas>
-
-  <!-- Retro Scanline Overlay (Optional Effect) -->
-  <div id="scanlines" class="scanlines" hidden></div>
+  <canvas id="c" aria-label="City Viewport"></canvas>
 
   <!-- Top Bar / Navigation -->
   <header id="top-bar">
     <div class="brand">
-      <span class="brand-badge">CITIZEN</span>
-      <h1 class="brand-title">CITY BUILDER 3D</h1>
+      <span class="brand-badge">2.5D</span>
+      <h1 class="brand-title">POCKET METROPOLIS</h1>
     </div>
 
     <!-- Perspective Mode Selector -->
     <div class="cam-modes">
-      <button class="retro-btn active" data-cam="iso" id="btn-cam-iso" title="Isometric / Aerial Builder View">AERIAL</button>
-      <button class="retro-btn" data-cam="third" id="btn-cam-third" title="Third-Person Explorer">3RD PERSON</button>
-      <button class="retro-btn" data-cam="first" id="btn-cam-first" title="First-Person Street Walker">1ST PERSON</button>
+      <button class="pastel-btn active" data-cam="iso" id="btn-cam-iso" title="Isometric 2.5D Builder View">2.5D ISOMETRIC</button>
+      <button class="pastel-btn" data-cam="third" id="btn-cam-third" title="Third-Person Citizen Follow">3RD PERSON</button>
+      <button class="pastel-btn" data-cam="first" id="btn-cam-first" title="First-Person Street Walker">1ST PERSON</button>
     </div>
 
     <!-- Action Controls -->
     <div class="top-actions">
-      <button class="retro-icon-btn" id="btn-pixel-fx" title="Toggle Retro Pixel Shader">PIXEL: OFF</button>
-      <button class="retro-icon-btn" id="btn-day-night" title="Toggle Day / Night Lighting">DAY</button>
-      <button class="retro-icon-btn" id="btn-sfx" title="Game Sounds (ON/OFF)">SFX: ON</button>
-      <button class="retro-icon-btn" id="btn-bgm" title="Background Ambience (ON/OFF)">BGM: ON</button>
-      <button class="retro-btn primary" id="btn-mp-open" title="Multiplayer Lobby (1-4 Players)">MULTIPLAYER</button>
+      <button class="pastel-pill-btn" id="btn-pixel-fx" title="Toggle 2.5D Pixel Rendering">PIXEL: OFF</button>
+      <button class="pastel-pill-btn" id="btn-day-night" title="Toggle Day / Night Lighting">DAY</button>
+      <button class="pastel-pill-btn" id="btn-sfx" title="Sound Effects">SFX: OFF</button>
+      <button class="pastel-pill-btn" id="btn-voice" title="Live Voice Chat (Microphone)" hidden>MIC: OFF</button>
+      <button class="pastel-btn primary" id="btn-mp-open" title="Multiplayer Lobby (1-4 Players)">MULTIPLAYER</button>
     </div>
   </header>
 
-  <!-- In-Game Stats Overlay -->
+  <!-- In-Game Stats HUD -->
   <div id="stats-hud">
-    <div class="stat-item"><span class="stat-lbl">POPULATION</span><span class="stat-val" id="hud-pop">0</span></div>
-    <div class="stat-item"><span class="stat-lbl">STRUCTURES</span><span class="stat-val" id="hud-structs">0</span></div>
-    <div class="stat-item"><span class="stat-lbl">GRID COORD</span><span class="stat-val" id="hud-coord">X: 0, Z: 0</span></div>
+    <div class="stat-item"><span class="stat-lbl">CITIZENS</span><span class="stat-val" id="hud-pop">0</span></div>
+    <div class="stat-item"><span class="stat-lbl">TREASURY</span><span class="stat-val amber" id="hud-coins">1,000 C</span></div>
+    <div class="stat-item"><span class="stat-lbl">HAPPINESS</span><span class="stat-val sage" id="hud-happy">100%</span></div>
+    <div class="stat-item"><span class="stat-lbl">GRID PARCEL</span><span class="stat-val" id="hud-coord">X: 0, Z: 0</span></div>
   </div>
 
-  <!-- Mobile Dual Virtual Thumbsticks Overlay -->
-  <div id="touch-controls" class="touch-controls" hidden>
-    <div id="stick-move" class="touch-stick"><div class="stick-knob"></div></div>
-    <div id="stick-look" class="touch-stick"><div class="stick-knob"></div></div>
+  <!-- Mobile Virtual Touch Joystick (Shown in 1st/3rd Person on touch devices) -->
+  <div id="joystick-zone" class="joystick-zone hidden">
+    <div id="joystick-thumb" class="joystick-thumb"></div>
   </div>
 
   <!-- Structure Placement Dock / Palette (Bottom) -->
@@ -58,15 +55,13 @@
     <div class="palette-categories">
       <button class="cat-btn active" data-cat="roads">ROADS</button>
       <button class="cat-btn" data-cat="buildings">BUILDINGS</button>
-      <button class="cat-btn" data-cat="parks">PARKS & TREES</button>
+      <button class="cat-btn" data-cat="parks">PARKS & NATURE</button>
       <button class="cat-btn" data-cat="pavement">PLAZAS</button>
     </div>
-    <div class="palette-items" id="palette-items">
-      <!-- Items dynamically populated from assets -->
-    </div>
+    <div class="palette-items" id="palette-items"></div>
     <div class="palette-actions">
-      <button class="retro-btn" id="btn-rotate" title="Rotate Selected Structure (R)">ROTATE [R]</button>
-      <button class="retro-btn danger" id="btn-demolish" title="Demolish Structure (X)">BULLDOZE [X]</button>
+      <button class="pastel-btn" id="btn-rotate" title="Rotate Structure [R]">ROTATE [R]</button>
+      <button class="pastel-btn danger" id="btn-demolish" title="Bulldozer Tool [X]">BULLDOZE [X]</button>
     </div>
   </nav>
 
@@ -79,17 +74,17 @@
       </div>
 
       <div class="modal-body">
-        <p class="modal-sub">Build together in real-time over P2P WebRTC. Zero private servers required.</p>
+        <p class="modal-sub">Build together across peers with real-time grid synchronization and optional WebRTC voice chat.</p>
         
         <div class="mp-section">
           <label class="field-label">HOST A CITY ROOM</label>
-          <button class="retro-btn primary full" id="mp-create-btn">CREATE NEW ROOM</button>
+          <button class="pastel-btn primary full" id="mp-create-btn">CREATE NEW ROOM</button>
           
           <div id="mp-room-info" class="mp-room-info" hidden>
             <div class="room-code-lbl">SHARE CODE WITH UP TO 3 FRIENDS</div>
             <div class="room-code-val" id="mp-room-code">-----</div>
-            <div class="room-status"><span class="pulse-dot"></span> Listening for players...</div>
-            <button class="retro-btn full" id="mp-copy-link-btn">COPY INVITE LINK</button>
+            <div class="room-status"><span class="pulse-dot"></span> Waiting for builders to connect...</div>
+            <button class="pastel-btn full" id="mp-copy-link-btn">COPY INVITE LINK</button>
           </div>
         </div>
 
@@ -99,14 +94,14 @@
           <label class="field-label">JOIN AN EXISTING CITY</label>
           <div class="row">
             <input type="text" id="mp-input-code" maxlength="5" placeholder="ROOM CODE" autocomplete="off" spellcheck="false">
-            <button class="retro-btn" id="mp-join-btn">JOIN ROOM</button>
+            <button class="pastel-btn" id="mp-join-btn">JOIN ROOM</button>
           </div>
         </div>
 
         <div id="mp-peers-box" class="mp-peers-box" hidden>
-          <label class="field-label">CONNECTED BUILDERS</label>
+          <label class="field-label">CONNECTED BUILDERS (VOICE ACTIVE)</label>
           <div id="mp-peers-list" class="peers-list"></div>
-          <button class="retro-btn danger full" id="mp-leave-btn" style="margin-top: 10px;">DISCONNECT & EXIT</button>
+          <button class="pastel-btn danger full" id="mp-leave-btn" style="margin-top: 12px;">LEAVE CITY & EXIT</button>
         </div>
       </div>
     </div>
