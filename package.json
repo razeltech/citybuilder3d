@@ -1,0 +1,13 @@
+{
+  "name": "citybuilder3d",
+  "version": "1.0.0",
+  "description": "Cooperative 3D Multiplayer City Builder (1-4 Players) built with Three.js & PeerJS",
+  "scripts": {
+    "build": "npx esbuild src/app.js --bundle --minify --outfile=app.bundle.js",
+    "dev": "npx esbuild src/app.js --bundle --outfile=app.bundle.js --watch"
+  },
+  "dependencies": {
+    "peerjs": "^1.5.4",
+    "three": "^0.186.1"
+  }
+}
